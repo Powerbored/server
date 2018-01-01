@@ -5,4 +5,5 @@ block content
 	ul
 	each article, i in articles
 		li
-			a(href="/articles/"+article._id)= article.title
+			a(href='/articles/'+article._id)= article.title
+	a(href='/articles/add') Add article

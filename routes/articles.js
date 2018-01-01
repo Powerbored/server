@@ -1,15 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-
-mongoose.connect('mongodb://localhost/serverdb');
-let db = mongoose.connection;
-db.once('open', function() {
-	console.log('Connected to Mongodb' + db);
-});
-db.on('error', function(err){
-	console.log(err);
-});
 
 let articleModel = require('../models/article');
 
@@ -33,18 +23,32 @@ router.get('/add', function(req, res) {
 });
 
 router.post('/add', function(req, res){
-	let article = new articleModel();
-	article.title = req.body.title;
-	article.author = req.body.author;
-	article.body = req.body.body;
-	article.save(function(err){
-		if (err) {
-			console.log(err);
-			return;
-		} else {
-			res.redirect('/articles');
-		}
-	});
+	req.checkBody('title', 'Title is required').notEmpty();
+	req.checkBody('author', 'Author is required').notEmpty();
+	req.checkBody('body', 'Body is required').notEmpty();
+
+	let errors = req.validationErrors();
+
+	if(errors) {
+		res.render('articles/add', {
+			title: 'Add Article',
+			errors: errors
+		});
+	} else {
+		let article = new articleModel();
+		article.title = req.body.title;
+		article.author = req.body.author;
+		article.body = req.body.body;
+		article.save(function(err){
+			if (err) {
+				console.log(err);
+				return;
+			} else {
+				req.flash('success', 'Added '+article.title);
+				res.redirect('/articles');
+			}
+		});
+	}	
 });
 
 router.get('/:id', function(req, res){
@@ -52,6 +56,17 @@ router.get('/:id', function(req, res){
 		res.render('articles/article', {
 			article: article
 		});
+	});
+});
+
+router.delete('/:id', function(req, res) {
+	let query = {_id:req.params.id};
+
+	articleModel.remove(query, function(err) {
+		if (err) {
+			console.log(err);
+		}
+		res.send('Success');
 	});
 });
 
@@ -76,19 +91,9 @@ router.post('/edit/:id', function(req, res){
 			console.log(err);
 			return;
 		} else {
+			req.flash('success', 'Updated '+article.title);
 			res.redirect('/articles');
 		}
-	});
-});
-
-router.delete('/:id', function(req, res) {
-	let query = {_id:req.params.id};
-
-	articleModel.remove(query, function(err) {
-		if (err) {
-			console.log(err);
-		}
-		res.send('Success');
 	});
 });
 

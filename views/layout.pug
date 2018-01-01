@@ -4,4 +4,9 @@ html
 		title= title
 		link(rel='stylesheet', href='/stylesheets/style.css')
 	body
+		!= messages('components/message', locals)
+		if errors
+			ul
+			each error, i in errors
+				li= error.msg
 		block content

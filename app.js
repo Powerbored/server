@@ -4,6 +4,19 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const expressValidator = require('express-validator');
+const flash = require('connect-flash');
+const session = require('express-session');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/serverdb');
+let db = mongoose.connection;
+db.once('open', function() {
+	console.log('Mongoose connected to ' + db.name);
+});
+db.on('error', function(err){
+	console.log(err);
+});
 
 const routes = {
 	index: require('./routes/index'),
@@ -25,6 +38,35 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'static')));
+
+app.use(session({
+	secret: 'this is the secret',
+	resave: true,
+	saveUninitialized: true
+}));
+
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+	res.locals.messages = require('express-messages')(req, res);
+	next();
+})
+
+app.use(expressValidator({
+	errorFormatter: function(param, msg, value) {
+		let namespace = param.split('.'),
+			root = namespace.shift(),
+			formParam = root;
+
+		while(namespace.length) {
+			formParam += '[' + namespace.shift() + ']';
+		}
+		return {
+			param: formParam,
+			msg: msg,
+			value: value
+		};
+	}
+}));
 
 app.use('/', routes.index);
 for (r in routes) {
