@@ -17,8 +17,9 @@ router.get('/', function(req, res) {
 });
 
 router.get('/add', function(req, res) {
-	res.render('articles/add', { 
-		title: 'Add Article' 
+	res.render('articles/article-form', { 
+		title: 'Add Article' ,
+		postTo: '/articles/add'
 	});
 });
 
@@ -72,8 +73,10 @@ router.delete('/:id', function(req, res) {
 
 router.get('/edit/:id', function(req, res){
 	articleModel.findById(req.params.id, function(err, article){
-		res.render('articles/edit', {
-			article: article
+		res.render('articles/article-form', {
+			article: article,
+			title: 'Edit ' + article.title,
+			postTo: '/articles/edit/' + article._id
 		});
 	});
 });

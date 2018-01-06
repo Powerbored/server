@@ -1,0 +1,16 @@
+extends /layout
+
+block content
+	h1=title
+	form(method='POST', action=postTo)
+		.form-group
+			label Title:
+			input.form-control(name='title', type='text', value=article ? article.title || false : false)
+		.form-group
+			label Author:
+			input.form-control(name='author', type='text', value=article ? article.author || false : false)
+		.form-group
+			label Body:
+			textarea.form-control(name='body')= article ? article.body || "" : ""
+		input(type='submit', value='Submit')
+		a(href='/articles') Cancel
