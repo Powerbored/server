@@ -6,3 +6,35 @@ body {
 a {
 	color: #00B7FF;
 }
+
+nav {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+
+nav > * {
+	padding: 0;
+	margin: 0;
+}
+
+nav li {
+	display: inline-block;
+}
+
+nav li > a {
+	display: block;
+	padding: 10px;
+	margin: 2px;
+	border: 1px solid grey;
+	border-radius: 4px;
+}
+
+.nav {
+	float: left;
+}
+
+.login {
+	float: right;
+}

@@ -2,7 +2,7 @@ extends /layout
 
 block content
 	h1 Register
-	form(methos='POST', action='/users/register')
+	form(method='POST', action='/users/register')
 		.form-group
 			label Name:
 			input(name='name', type='text')
@@ -16,6 +16,6 @@ block content
 			label Password:
 			input(name='password', type='password')
 			label Confirm password:
-			input(name='confirm-password', type='password')
+			input(name='confirmPassword', type='password')
 		input(type='submit', value='Submit')
 		

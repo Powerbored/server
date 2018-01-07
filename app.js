@@ -7,9 +7,12 @@ const bodyParser = require('body-parser');
 const expressValidator = require('express-validator');
 const flash = require('connect-flash');
 const session = require('express-session');
+const passport = require('passport');
 const mongoose = require('mongoose');
+const config = require('./config/database');
+const app = express();
 
-mongoose.connect('mongodb://localhost/serverdb');
+mongoose.connect(config.database);
 let db = mongoose.connection;
 db.once('open', function() {
 	console.log('Mongoose connected to ' + db.name);
@@ -19,12 +22,22 @@ db.on('error', function(err){
 });
 
 const routes = {
-	index: require('./routes/index'),
-	users: require('./routes/users'),
-	articles: require('./routes/articles')
+	index: {
+		name: 'Home',
+		path: '/index',
+		router: require('./routes/index')
+	}, 
+	users: {
+		path: '/users',
+		router: require('./routes/users')
+	}, 
+	articles: {
+		name: 'Articles',
+		path: '/articles',
+		router: require('./routes/articles')
+	}
 }
-
-const app = express();
+app.locals.nav = routes;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -49,7 +62,7 @@ app.use(require('connect-flash')());
 app.use(function (req, res, next) {
 	res.locals.messages = require('express-messages')(req, res);
 	next();
-})
+});
 
 app.use(expressValidator({
 	errorFormatter: function(param, msg, value) {
@@ -68,11 +81,18 @@ app.use(expressValidator({
 	}
 }));
 
-app.use('/', routes.index);
-for (r in routes) {
-	if (routes.hasOwnProperty(r)) {
-		app.use('/' + r, routes[r]);
-	}
+app.use(passport.initialize());
+app.use(passport.session());
+require('./config/passport')(passport);
+
+app.get('*', function(req, res, next) {
+	res.locals.user = req.user || null;
+	next();
+})
+
+app.use('/', routes.index.router);
+for (let r of Object.keys(routes)) {
+	app.use(routes[r].path, routes[r].router);
 }
 
 // catch 404 and forward to error handler

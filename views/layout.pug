@@ -4,6 +4,21 @@ html
 		title= title
 		link(rel='stylesheet', href='/stylesheets/style.css')
 	body
+		nav
+			ul.nav
+				each route, i in locals.nav
+					if route.name
+						li
+							a(href=route.path)= route.name
+			ul.login
+				if user
+					li 
+						a(href='/user/logout') Logout
+				else
+					li 
+						a(href='/users/register') Register
+					li
+						a(href='/users/login') Login
 		!= messages('components/message', locals)
 		if errors
 			ul
