@@ -1,11 +1,12 @@
 window.onload = function() {
 	deleteArticle.addEventListener('click', function(e){
 		const id = e.target.getAttribute('data-id');
-		fetch('/articles/'+id, {
+		fetch('/articles/' + id, {
 			method: 'DELETE',
 			headers: new Headers(),
 			mode: 'cors',
-			cache: 'default'
+			cache: 'default',
+			credentials: 'same-origin'
 		}).then(function(res) {
 			if (res.ok) {
 				window.location = '/articles';
@@ -14,6 +15,6 @@ window.onload = function() {
 			}
 		}).catch(function(err) {
 			console.log(err);
-		})
+		});
 	});
 };

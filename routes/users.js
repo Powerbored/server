@@ -15,11 +15,11 @@ router.get('/register', function(req, res) {
 });
 
 router.post('/register', function(req, res) {
-	const name = req.body.name;
-	const email = req.body.email;
-	const username = req.body.username;
-	const password = req.body.password;
-	const confirmPassword = req.body.confirmPassword;
+	const name = req.body.name,
+		email = req.body.email,
+		username = req.body.username,
+		password = req.body.password,
+		confirmPassword = req.body.confirmPassword;
 
 	req.checkBody('name', 'Name is required').notEmpty();
 	req.checkBody('email', 'Email is required').notEmpty();
@@ -28,38 +28,48 @@ router.post('/register', function(req, res) {
 	req.checkBody('password', 'Password is required').notEmpty();
 	req.checkBody('confirmPassword', 'Passwords do not match').equals(req.body.password);
 
-	let errors =  req.validationErrors();
-	
-	if (errors) {
-		res.render('users/register', {
-			errors: errors
-		});
-	} else {
-		let newUser = new userModel({
-			name: name,
-			email: email,
-			username: username,
-			password: password
-		});
+	let errors = req.validationErrors() || [];
 
-		bcrypt.genSalt(10, function(err, salt){
-			bcrypt.hash(newUser.password, salt, function(err, hash){
-				if (err) {
-					console.log(err);
-				}
-				newUser.password = hash;
-				newUser.save(function(saveErr){
-					if (saveErr) {
-						console.log(saveErr);
-						return;
-					} else {
-						req.flash('success', 'You are now registered');
-						res.redirect('/users/login');
+	userModel.findOne({username: username}, 'username', function(err, user) {
+		if (user) {
+			errors.push({
+				param: 'username',
+				msg: `The username ${user.username} is already in use`,
+				value: ''
+			});
+		}
+		console.log(errors);
+		if (errors.length > 0) {
+			res.render('users/register', {
+				errors: errors
+			});
+		} else {
+			let newUser = new userModel({
+				name: name,
+				email: email,
+				username: username,
+				password: password
+			});
+	
+			bcrypt.genSalt(10, function(err, salt){
+				bcrypt.hash(newUser.password, salt, function(err, hash){
+					if (err) {
+						console.log(err);
 					}
+					newUser.password = hash;
+					newUser.save(function(saveErr){
+						if (saveErr) {
+							console.log(saveErr);
+							return;
+						} else {
+							req.flash('success', username + ' is now registered');
+							res.redirect('/users/login');
+						}
+					});
 				});
 			});
-		});
-	}
+		}
+	});
 });
 
 router.get('/login', function(req, res) {
@@ -73,5 +83,11 @@ router.post('/login', function(req, res, next) {
 		failureFlash: true
 	})(req, res, next);
 });
+
+router.get('/logout', function(req, res){
+	req.logout();
+	req.flash('success', 'You are logged out');
+	res.redirect('/index');
+})
 
 module.exports = router;
